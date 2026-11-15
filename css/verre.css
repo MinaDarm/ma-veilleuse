@@ -1,0 +1,304 @@
+/* Ma veilleuse : le verre sur la photo.
+   Direction visuelle du 12 novembre 2026 : une vraie photo de lieu derrière, une interface en verre dépoli devant.
+   Cette feuille vient après app.css et prend le dessus sur les écrans qui portent la classe « vp » (verre sur photo).
+   Trois heures : data-heure vaut « jour », « entre-deux » ou « nuit » sur <html>. */
+
+:root{
+  --or:#FFC45A; --feu:#FF8A1F; --brun:#3A2413; --r:44px;
+  /* Le verre : son bord (v), ses panneaux (p), sa ligne de bord (vb) et son ombre (vo). L'entre-deux est la base. */
+  --v1:rgba(255,255,255,.26); --v2:rgba(255,255,255,.12); --vb:rgba(255,255,255,.30); --vb2:rgba(255,255,255,.42);
+  --p1:rgba(74,56,46,.50); --p2:rgba(52,38,31,.58); --vo:rgba(40,16,4,.62);
+}
+/* Le jour : le ciel est clair, le verre a un bord plus franc et des panneaux un peu plus denses. */
+:root[data-heure="jour"]{--vb:rgba(255,255,255,.46); --vb2:rgba(255,255,255,.60); --p1:rgba(98,70,52,.60); --p2:rgba(74,52,38,.66); --vo:rgba(96,52,16,.5)}
+/* La nuit : le verre s'assombrit pour ne pas éblouir, la lumière prend le dessus. */
+:root[data-heure="nuit"]{--v1:rgba(255,236,214,.17); --v2:rgba(255,236,214,.07); --vb:rgba(255,236,214,.20); --vb2:rgba(255,236,214,.30); --p1:rgba(40,28,22,.56); --p2:rgba(22,15,12,.66); --vo:rgba(0,0,0,.8)}
+
+/* ---------- La couche décor : la photo, le sol prolongé, les lueurs, le voile ---------- */
+.decor{position:fixed;z-index:0;top:0;bottom:0;left:50%;width:100%;max-width:440px;transform:translateX(-50%);overflow:hidden;background:#1A110C;container-type:inline-size;pointer-events:none;display:none}
+body.vp .decor{display:block}
+/* Le contenu passe devant le décor. Un décor en profondeur négative s'assombrissait dès que la photo s'animait. */
+body.vp .app{position:relative;z-index:1}
+/* La photo fait 9 sur 16, l'écran est plus haut. On accroche la photo juste au-dessus de la barre du bas : les boules restent
+   visibles entre les cartes et la barre. Le ciel qui manque en haut est prolongé avec la première bande de la photo, étirée et floutée ;
+   le sable qui manque en bas, derrière la barre, avec la dernière bande. */
+.decor{--bas:calc(76px + env(safe-area-inset-bottom));--ph:calc(100cqw * 16 / 9)}
+.decor .photo{position:absolute;left:0;bottom:var(--bas);width:100%;height:var(--ph);background-size:100% 100%;background-position:50% 0;background-repeat:no-repeat;transform-origin:50% 60%;animation:derive 26s ease-in-out infinite alternate;transition:opacity .7s ease-out}
+.decor .photo.arrive{opacity:0;transition:none}
+.decor .ciel{position:absolute;left:-8%;right:-8%;top:-40px;height:calc(100% - var(--bas) - var(--ph) + 42px);background-size:100% 2600%;background-position:50% 0;background-repeat:no-repeat;filter:blur(18px)}
+.decor .sol{position:absolute;left:-8%;right:-8%;top:calc(100% - var(--bas) - 2px);bottom:-40px;background-size:100% 2600%;background-position:50% 100%;background-repeat:no-repeat;filter:blur(18px) saturate(1.04)}
+.decor .sol::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg, rgba(20,12,8,0) 0%, rgba(20,12,8,.45) 100%)}
+/* Chaque boule a une lueur qui respire. Positions en pourcentage de la photo, posées par le script. */
+.decor .lueur{position:absolute;aspect-ratio:1;border-radius:50%;transform:translate(-50%,-50%);mix-blend-mode:screen;
+  background:radial-gradient(closest-side, rgba(255,186,92,.46) 0%, rgba(255,128,34,.24) 38%, rgba(255,96,10,.07) 68%, transparent 100%);animation:souffle 6.5s ease-in-out infinite}
+:root[data-heure="jour"] .decor .lueur{filter:opacity(.4)}
+:root[data-heure="nuit"] .decor .lueur{filter:opacity(.8)}
+/* Le voile : une ombre chaude en haut, pour lire le salut sur le ciel de l'entre-deux. */
+.decor .voile{position:absolute;left:0;right:0;top:0;height:300px;background:linear-gradient(180deg, rgba(74,34,10,.42) 0%, rgba(74,34,10,.20) 55%, rgba(74,34,10,0) 100%)}
+:root[data-heure="jour"] .decor .voile,:root[data-heure="nuit"] .decor .voile{display:none}
+@keyframes souffle{0%,100%{opacity:.35;transform:translate(-50%,-50%) scale(.9)}42%{opacity:1;transform:translate(-50%,-50%) scale(1.1)}}
+@keyframes derive{from{transform:scale(1)}to{transform:scale(1.035)}}
+
+/* ---------- La page en verre : couleurs et police ---------- */
+body.vp{
+  background:#1A110C;color:#fff;color-scheme:dark;
+  --encre:#fff; --cendre:rgba(255,255,255,.74); --bronze:#FFD28A;
+  --papier:rgba(60,44,36,.58); --creux:rgba(0,0,0,.26);
+  --trait:rgba(255,255,255,.14); --trait-fort:rgba(255,255,255,.28); --bord:rgba(255,255,255,.42);
+  --lumiere:#FFC45A; --lumiere-hi:#FFF0C4; --lumiere-deep:#FF8A1F; --lueur:rgba(255,196,90,.16); --halo:rgba(255,160,60,.55);
+  --brique:#FFB8A0; --brique-fond:rgba(255,120,90,.14); --brique-trait:rgba(255,150,120,.4);
+  --plein:#FFF3DC; --sur-plein:#3A2413; --ombre:none;
+  --chevron:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+}
+body.vp .lampe{display:none}
+/* Une seule police, Lexend, en graisses fines. */
+body.vp .display,body.vp .title,body.vp h1,body.vp h2,body.vp h3,body.vp .wordmark,body.vp .clock,body.vp .duree b,body.vp .verset{font-family:var(--font-body)}
+body.vp h2{font-weight:300;letter-spacing:-.02em}
+body.vp h3{font-weight:350}
+body.vp .display{font-weight:250}
+body.vp .verset{font-style:normal;font-weight:300}
+body.vp b,body.vp strong{font-weight:450}
+
+/* ---------- Le verre : un bord épais et clair, et dedans des panneaux plus denses ---------- */
+.verre{position:relative;border-radius:var(--r);padding:7px;background:linear-gradient(180deg, var(--v1), var(--v2));
+  -webkit-backdrop-filter:blur(16px) saturate(125%);backdrop-filter:blur(16px) saturate(125%);
+  box-shadow:inset 0 0 0 1px var(--vb), inset 0 1.5px 0 var(--vb2), 0 26px 46px -22px var(--vo)}
+.pan{position:relative;border-radius:calc(var(--r) - 7px);background:linear-gradient(180deg, var(--p1), var(--p2));
+  -webkit-backdrop-filter:blur(30px) saturate(135%);backdrop-filter:blur(30px) saturate(135%);box-shadow:inset 0 1px 0 rgba(255,255,255,.16), inset 0 0 0 1px rgba(255,255,255,.05)}
+.noir{border-radius:calc(var(--r) - 7px);background:linear-gradient(180deg, #252120, #191615);box-shadow:inset 0 1px 0 rgba(255,255,255,.09), 0 8px 18px -10px rgba(0,0,0,.6)}
+/* Les cartes héritées de la version 3 prennent le même verre, en un seul élément : le bord est une bordure transparente peinte par-dessous. */
+body.vp .card,body.vp .nudge,body.vp .moment,body.vp .prieres,body.vp .hero,body.vp .tile{
+  border:7px solid transparent;border-radius:var(--r);
+  background:linear-gradient(180deg, var(--p1), var(--p2)) padding-box, linear-gradient(180deg, var(--v1), var(--v2)) border-box;
+  -webkit-backdrop-filter:blur(22px) saturate(130%);backdrop-filter:blur(22px) saturate(130%);
+  outline:1px solid var(--vb);outline-offset:-1px;box-shadow:0 26px 46px -22px var(--vo)}
+body.vp .card,body.vp .moment,body.vp .prieres{padding:16px 18px 18px}
+body.vp .nudge{padding:14px 16px 16px}
+body.vp .tiles{gap:10px}
+body.vp .tile{--r:34px;padding:12px 14px 13px;min-height:118px;gap:8px;color:#fff}
+body.vp .tile .ic{color:var(--or)}
+body.vp .tile b{font-weight:350;font-size:16px}
+body.vp .tile .st{color:rgba(255,255,255,.72);font-size:13px}
+body.vp .tiles > .tile:last-child:nth-child(odd){min-height:0}
+/* Boutons, liens et champs sur le verre */
+body.vp .btn{border-radius:999px;border:1px solid rgba(255,255,255,.26);background:rgba(255,255,255,.1);color:#fff;font-weight:400;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+body.vp .btn.primary{background:linear-gradient(180deg, #FFF6E4, #FFE2B0);color:var(--brun);border-color:transparent;box-shadow:0 10px 24px -12px rgba(255,160,60,.7)}
+body.vp .btn.danger{color:#FFB8A0}
+body.vp .link{color:#FFD28A;font-weight:400}
+body.vp .seg{background:rgba(0,0,0,.26);border-color:rgba(255,255,255,.1);border-radius:999px}
+body.vp .seg button{border-radius:999px;color:rgba(255,255,255,.74);font-weight:400}
+body.vp .seg button[aria-pressed="true"]{background:rgba(255,255,255,.16);color:#fff;box-shadow:0 0 0 1px rgba(255,196,90,.5)}
+body.vp .duree{border-radius:22px;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.1)}
+body.vp .duree b{font-weight:300}
+body.vp .duree[aria-pressed="true"]{border-color:rgba(255,196,90,.6);background:rgba(255,196,90,.12)}
+body.vp .demo-tag{color:rgba(255,255,255,.8);border-color:rgba(255,255,255,.35)}
+body.vp .fine{color:rgba(255,255,255,.78)}
+body.vp .verset{border-left-color:var(--or)}
+
+/* ---------- L'accueil ---------- */
+.ecran-un{display:flex;flex-direction:column;min-height:calc(100dvh - env(safe-area-inset-top) - 12px)}
+.ecran-un > .vide{flex:1 1 auto;min-height:24px}       /* la place du chemin de lumières, dans le paysage */
+.haut{display:flex;align-items:center;justify-content:space-between;min-height:40px;padding:0 6px}
+.marque{font-size:15.5px;font-weight:400;letter-spacing:-.005em;display:flex;align-items:center;gap:9px;text-shadow:0 1px 2px rgba(60,24,6,.35), 0 1px 12px rgba(60,24,6,.5)}
+.marque i{width:10px;height:10px;border-radius:50%;background:radial-gradient(circle at 40% 35%, #FFE9B0, var(--or) 45%, var(--feu));box-shadow:0 0 10px 2px rgba(255,150,50,.85)}
+.outils{display:flex;gap:8px}
+.rond{--r:20px;all:unset;box-sizing:border-box;cursor:pointer;width:40px;height:40px;padding:0;display:grid;place-items:center;color:#fff;text-decoration:none;border-radius:20px;
+  background:linear-gradient(180deg, var(--v1), var(--v2));-webkit-backdrop-filter:blur(16px) saturate(125%);backdrop-filter:blur(16px) saturate(125%);
+  box-shadow:inset 0 0 0 1px var(--vb), inset 0 1.5px 0 var(--vb2), 0 14px 26px -14px var(--vo)}
+.rond svg{width:20px;height:20px;stroke-width:1.5}
+.rond:active{transform:scale(.94)}
+:root[data-heure="jour"] .rond{background:linear-gradient(180deg, rgba(112,78,54,.50), rgba(92,62,42,.56))}
+/* Le petit soleil, le soleil couchant ou la petite lune, selon l'heure. */
+:root[data-heure] body.vp .theme-btn span{display:none}
+:root[data-heure="jour"] body.vp .theme-btn .ic-soleil,:root[data-heure="entre-deux"] body.vp .theme-btn .ic-soir,:root[data-heure="nuit"] body.vp .theme-btn .ic-lune{display:grid}
+
+.salut{margin:12px 8px 0;text-shadow:0 1px 2px rgba(60,24,6,.35), 0 2px 22px rgba(60,24,6,.55)}
+.salut .heure{font-size:13.5px;font-weight:400;display:flex;gap:10px;align-items:baseline;color:rgba(255,255,255,.86);margin:0}
+.salut .heure b{font-weight:500;color:#fff;font-variant-numeric:lining-nums tabular-nums}
+.salut h1{margin:4px 0 0;font-weight:250;font-size:39px;line-height:1.02;letter-spacing:-.035em;text-wrap:balance}
+.salut .date{margin-top:7px;font-size:14px;font-weight:300;color:rgba(255,255,255,.9)}
+/* Le jour, le texte posé directement sur le ciel passe en brun. */
+:root[data-heure="jour"] body.vp .marque,:root[data-heure="jour"] body.vp .salut{color:var(--brun);text-shadow:0 1px 14px rgba(255,244,226,.55)}
+:root[data-heure="jour"] body.vp .salut .heure,:root[data-heure="jour"] body.vp .salut .date{color:rgba(58,36,19,.84)}
+:root[data-heure="jour"] body.vp .salut .heure b{color:var(--brun)}
+
+.journee{margin-top:16px}
+.ecran-un .nudge{margin-top:14px}
+.journee .pan{padding:14px 18px 15px}
+.sur{font-size:13px;font-weight:400;color:rgba(255,255,255,.74);display:flex;align-items:center;gap:8px;margin:0}
+.sur i{width:7px;height:7px;border-radius:50%;background:var(--or);box-shadow:0 0 8px 2px rgba(255,160,60,.9)}
+.journee h2{margin:5px 0 0;font-weight:250;font-size:29px;line-height:1.08;letter-spacing:-.03em}
+.journee .mot{margin-top:8px;font-size:14px;line-height:1.5;font-weight:300;color:rgba(255,255,255,.86);text-wrap:balance}
+.journee .notes{margin:8px 0 0;padding:0 0 0 16px;font-size:13.5px;color:rgba(255,255,255,.86)}
+.journee .liens{display:flex;flex-wrap:wrap;gap:4px 18px;margin-top:9px}
+.journee .liens .link{font-size:13px;color:rgba(255,255,255,.8)}
+/* La capsule charbon de la jauge : un toucher la refait. */
+.capsule{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;width:100%;margin-top:7px;padding:10px 6px 11px}
+.capsule > span{display:grid;gap:9px;justify-items:center}
+.capsule > span + span{box-shadow:-1px 0 0 rgba(255,255,255,.09)}
+.capsule small{font-size:12px;font-weight:400;color:rgba(255,255,255,.66);letter-spacing:.01em}
+.perles{display:flex;gap:8px}
+.perles i{width:13px;height:13px;border-radius:50%;display:block;box-shadow:inset 0 0 0 1.2px rgba(255,255,255,.26)}
+.perles i.on{background:radial-gradient(circle at 38% 32%, #FFF0C4 0%, var(--or) 40%, var(--feu) 100%);box-shadow:0 0 9px 2px rgba(255,150,50,.85), 0 0 20px 6px rgba(255,110,20,.32)}
+.capsule:active{transform:scale(.985)}
+/* Juste après la jauge, la journée s'allume. */
+.journee.lit h2{animation:leve .6s .2s cubic-bezier(.2,.8,.2,1) both}
+.journee.lit .mot{animation:leve .6s .35s cubic-bezier(.2,.8,.2,1) both}
+.journee.lit .perles i.on{animation:etincelle .5s cubic-bezier(.2,1.4,.4,1) both;animation-delay:calc(.5s + var(--i,0) * 70ms)}
+/* La jauge à remplir, dans le verre */
+.journee .jauge{margin-top:12px}
+body.vp .jr{grid-template-columns:78px 1fr}
+body.vp .jl b{font-weight:400;font-size:15px}
+body.vp .jl small{color:rgba(255,255,255,.66)}
+body.vp .jo{min-height:70px;border-radius:18px;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.1)}
+body.vp .jp{background:transparent;border-color:rgba(255,255,255,.35)}
+body.vp .jp.on{background:radial-gradient(circle at 38% 32%, #FFF0C4 0%, var(--or) 40%, var(--feu) 100%);border-color:transparent;box-shadow:0 0 9px 2px rgba(255,150,50,.85), 0 0 20px 6px rgba(255,110,20,.32)}
+body.vp .jo[aria-pressed="true"]{border-color:rgba(255,196,90,.6);background:rgba(255,196,90,.12)}
+body.vp .jw{color:rgba(255,255,255,.7)}
+body.vp .jo[aria-pressed="true"] .jw{color:#fff}
+.journee .btn.big{margin-top:14px}
+.journee .err{min-height:0;margin:6px 0 0;font-size:13.5px;color:#FFD2A8}
+.journee .err:empty{display:none}
+.journee .link.center{display:block;text-align:center;margin-top:10px}
+
+/* Les deux tuiles du premier écran */
+.duo{margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tuile{--r:34px;padding:5px;text-decoration:none;color:#fff;cursor:pointer}
+.tuile .pan{border-radius:calc(var(--r) - 5px);padding:11px 12px 11px 15px;display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;min-height:64px}
+.tuile b{display:block;font-weight:300;font-size:16px;letter-spacing:-.02em;white-space:nowrap}
+.tuile small{display:block;margin-top:3px;font-size:12.5px;font-weight:300;color:rgba(255,255,255,.72)}
+.tuile:active{transform:scale(.97)}
+.anneau{width:30px;height:30px}
+.anneau circle{fill:none;stroke-width:3}
+.anneau .piste{stroke:rgba(255,255,255,.18)} .anneau .fait{stroke:var(--or);filter:drop-shadow(0 0 4px rgba(255,150,50,.9))}
+.bille{width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 40% 34%, #FFE7A8 0%, var(--or) 34%, var(--feu) 78%, #E2560E 100%);box-shadow:0 0 16px 4px rgba(255,140,40,.7), 0 0 40px 12px rgba(255,110,20,.28);animation:bille 6.5s ease-in-out infinite}
+@keyframes bille{0%,100%{filter:brightness(.92)}42%{filter:brightness(1.12)}}
+
+/* ---------- La barre du bas, sur tous les écrans ---------- */
+.tabs{--r:38px;display:block;gap:0;bottom:calc(14px + env(safe-area-inset-bottom));width:calc(100% - 28px);max-width:412px;padding:7px;border:0;border-radius:var(--r);
+  background:linear-gradient(180deg, var(--v1), var(--v2));-webkit-backdrop-filter:blur(16px) saturate(125%);backdrop-filter:blur(16px) saturate(125%);
+  box-shadow:inset 0 0 0 1px var(--vb), inset 0 1.5px 0 var(--vb2), 0 26px 46px -22px var(--vo)}
+.tabs .pan{height:62px;display:grid;grid-template-columns:1fr 1fr 78px 1fr 1fr;align-items:center}
+.tabs a{display:grid;justify-items:center;gap:4px;min-height:0;padding:0;font-size:10.5px;font-weight:400;color:rgba(255,255,255,.62);border-radius:0}
+.tabs a svg{width:19px;height:19px;stroke-width:1.5}
+.tabs a[aria-current="page"],.tabs a[aria-current="page"] svg{color:#fff;font-weight:400}
+.tab-ind{display:none}
+.veille{width:70px;height:70px;margin-top:-30px;padding:6px;border:0;border-radius:50%;background:linear-gradient(180deg, rgba(255,255,255,.34), rgba(255,255,255,.14));
+  -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.34), 0 14px 24px -10px rgba(40,16,4,.7)}
+:root[data-heure="nuit"] .veille{background:linear-gradient(180deg, rgba(255,236,214,.24), rgba(255,236,214,.09))}
+.veille .orb{width:58px;height:58px}
+.veille .orb::after{background:radial-gradient(circle at 40% 32%, #FFEDBA 0%, var(--or) 30%, var(--feu) 72%, #DD520C 100%);box-shadow:0 0 22px 6px rgba(255,140,40,.75), inset -4px -6px 10px rgba(160,50,0,.35)}
+.veille .orb::before{background:radial-gradient(circle, rgba(255,160,60,.55) 0%, rgba(255,196,90,.16) 42%, transparent 70%)}
+.veille .orb .onde{border-color:var(--or)}
+/* Sur les écrans encore à l'ancienne, la barre garde ce verre : lisible le jour comme la nuit. */
+body.avec-coach .toast{bottom:calc(200px + env(safe-area-inset-bottom))}
+
+/* ---------- Moins d'animations ---------- */
+:root[data-mvt="doux"] .decor .lueur,:root[data-mvt="doux"] .bille,:root[data-mvt="doux"] .veille .orb::after{animation:souffle-doux 6.5s ease-in-out infinite !important}
+:root[data-mvt="doux"] .decor .photo{animation:none !important}
+@keyframes souffle-doux{0%,100%{opacity:.45}42%{opacity:1}}
+
+/* ==========================================================================
+   Séance 3 : les écrans d'Aujourd'hui et les composants communs, sur le verre
+   ========================================================================== */
+body.vp{--lin:rgba(0,0,0,.26);--lin-2:rgba(0,0,0,.3)}
+/* Une seule police, Lexend, jusque dans les titres hérités */
+body.vp :is(.display,.title,h1,h2,h3,.wordmark,.clock,.duree b,.verset,.projet .titre,.pr-tete b,.pr b,.points li::before,.avatar,.show-inner .big,.biglist li,.sf-nom,.call b,.nums .n,.besoin .display){font-family:var(--font-body)}
+body.vp :is(.projet .titre,.pr-tete b,.sf-nom,.biglist li,.show-inner .big){font-weight:300}
+body.vp :is(.pr b,.call b,.nums .n,.avatar,.points li::before){font-weight:400}
+body.vp .title{font-weight:250;font-size:34px;letter-spacing:-.03em;line-height:1.05}
+body.vp .title.big{font-size:38px}
+/* Les sous-écrans : un voile plus dense sur la photo, pour lire facilement */
+body.vp.sous .decor::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg, rgba(40,20,8,.14) 0%, rgba(30,15,6,.34) 45%, rgba(22,11,5,.52) 100%)}
+:root[data-heure="jour"] body.vp.sous .decor::after{background:linear-gradient(180deg, rgba(60,36,19,.06) 0%, rgba(60,36,19,.24) 45%, rgba(40,22,10,.42) 100%)}
+/* L'en-tête d'un sous-écran : le retour dans une capsule de verre, le titre posé sur le ciel */
+body.vp .subhead{min-height:40px}
+body.vp .backbtn{margin:0;padding:0 16px 0 8px;min-height:40px;border-radius:20px;color:#fff;font-weight:400;font-size:14.5px;gap:4px;
+  background:linear-gradient(180deg, var(--v1), var(--v2));-webkit-backdrop-filter:blur(16px) saturate(125%);backdrop-filter:blur(16px) saturate(125%);
+  box-shadow:inset 0 0 0 1px var(--vb), inset 0 1.5px 0 var(--vb2), 0 14px 26px -14px var(--vo)}
+body.vp .backbtn svg{color:#fff}
+:root[data-heure="jour"] body.vp .backbtn{background:linear-gradient(180deg, rgba(112,78,54,.50), rgba(92,62,42,.56))}
+/* Ce qui est posé directement sur la photo : titres de page, petites lignes, libellés de groupe */
+body.vp main > :is(.head,.fine,.group-label,p){text-shadow:0 1px 2px rgba(60,24,6,.35), 0 2px 18px rgba(60,24,6,.5)}
+body.vp main > .head .lead{color:rgba(255,255,255,.88);font-weight:300}
+body.vp main > .group-label{color:rgba(255,255,255,.82);font-weight:400}
+:root[data-heure="jour"] body.vp main > :is(.head,.fine,.group-label,p){color:var(--brun);text-shadow:0 1px 14px rgba(255,244,226,.55)}
+:root[data-heure="jour"] body.vp main > .head .lead,:root[data-heure="jour"] body.vp main > .fine{color:rgba(58,36,19,.84)}
+:root[data-heure="jour"] body.vp main > p .link,:root[data-heure="jour"] body.vp main > .link{color:#8A4A12}
+/* Les surfaces héritées prennent le verre, en un seul élément */
+body.vp :is(.group,.checks,.sw-list,.tasks,.projet,.racc,.sw.seul,.besoin,.nums,.urgence,.notice,.doux){
+  border:7px solid transparent;border-radius:30px;
+  background:linear-gradient(180deg, var(--p1), var(--p2)) padding-box, linear-gradient(180deg, var(--v1), var(--v2)) border-box;
+  -webkit-backdrop-filter:blur(22px) saturate(130%);backdrop-filter:blur(22px) saturate(130%);
+  outline:1px solid var(--vb);outline-offset:-1px;box-shadow:0 26px 46px -22px var(--vo)}
+body.vp .besoin{border-radius:var(--r)}
+body.vp .urgence{background:linear-gradient(180deg, rgba(255,110,80,.16), rgba(255,110,80,.07)) padding-box, linear-gradient(180deg, var(--p1), var(--p2)) padding-box, linear-gradient(180deg, var(--v1), var(--v2)) border-box}
+/* Dedans une carte, pas de verre sur du verre : une surface sombre et plate */
+body.vp .card :is(.tasks,.checks,.group,.sw.seul,.doux,.nums),body.vp .dedans :is(.sw.seul,.tasks),body.vp .sheet :is(.tasks,.checks,.group,.doux,.nums,.urgence){border:0;outline:0;box-shadow:none;border-radius:18px;background:rgba(0,0,0,.22);-webkit-backdrop-filter:none;backdrop-filter:none}
+body.vp .card .projet{border:0;outline:0;box-shadow:none;border-radius:0;background:transparent;-webkit-backdrop-filter:none;backdrop-filter:none;border-top:1px solid var(--trait)}
+body.vp :is(.group,.checks,.sw-list,.tasks,.nums) > :first-child{border-top:0}
+/* Interrupteurs, cases, pastilles */
+body.vp .sw .track{background:rgba(0,0,0,.3);border-color:rgba(255,255,255,.3)}
+body.vp .sw .knob{background:#F3E9DC;border-color:transparent}
+body.vp .sw[aria-checked="true"] .track{background:rgba(255,196,90,.22);border-color:var(--or)}
+body.vp .box{background:rgba(0,0,0,.2);border-color:rgba(255,255,255,.4)}
+body.vp .ic{background:rgba(0,0,0,.24);color:var(--or)}
+body.vp .cal-cell{border-color:rgba(255,255,255,.2)}
+body.vp .cal-cell.today{outline-color:rgba(255,255,255,.7)}
+body.vp .badge{background:rgba(255,196,90,.18);color:#FFD28A}
+body.vp .avatar{background:rgba(0,0,0,.24);color:#FFD28A}
+body.vp .tag,body.vp .duree-tag{color:rgba(255,255,255,.8);border-color:rgba(255,255,255,.3)}
+body.vp .warn{border-left-color:var(--or)}
+body.vp .mini-btn[aria-pressed="true"]{color:var(--or)}
+body.vp input:focus,body.vp textarea:focus,body.vp select:focus{border-color:var(--or)}
+/* La feuille du bas : un verre dense qui monte */
+body.vp .sheet-backdrop{background:rgba(20,10,4,.5)}
+body.vp .sheet{border-radius:34px 34px 0 0;color:#fff;background:linear-gradient(180deg, rgba(62,44,35,.9), rgba(38,26,20,.95));
+  -webkit-backdrop-filter:blur(30px) saturate(130%);backdrop-filter:blur(30px) saturate(130%);box-shadow:inset 0 1px 0 rgba(255,255,255,.2), 0 -10px 40px rgba(0,0,0,.4)}
+body.vp .sheet::before{background:rgba(255,255,255,.3)}
+/* L'écran à montrer : sombre et chaud, en grand */
+body.vp .show{background:radial-gradient(120% 60% at 50% 0%, rgba(255,160,60,.18), transparent 70%), linear-gradient(180deg, #2A1A10, #120B07);color:#fff}
+body.vp .show-inner .to{color:rgba(255,255,255,.72)}
+
+/* ==========================================================================
+   Séance 4 : les autres lieux, et l'ouverture dans les herbes
+   ========================================================================== */
+/* Respirer : la carte d'appel et les mots du souffle */
+body.vp .souffle-carte{border:7px solid transparent;border-radius:var(--r);
+  background:linear-gradient(180deg, var(--p1), var(--p2)) padding-box, linear-gradient(180deg, var(--v1), var(--v2)) border-box;
+  -webkit-backdrop-filter:blur(22px) saturate(130%);backdrop-filter:blur(22px) saturate(130%);outline:1px solid var(--vb);outline-offset:-1px;box-shadow:0 26px 46px -22px var(--vo)}
+body.vp :is(.sf-mot,.sf-compte){font-family:var(--font-body)}
+body.vp .sf-mot{font-weight:250;letter-spacing:-.03em}
+body.vp .sf-compte{font-weight:300}
+body.vp .sf-ring-bg{stroke:rgba(255,255,255,.22)}
+body.vp .sf-ring-fg{stroke:var(--or)}
+body.vp .call{background:rgba(0,0,0,.22);border-color:rgba(255,255,255,.12)}
+body.vp .urgence .call{border-color:rgba(255,150,120,.3)}
+body.vp .urgence h2{color:#FFC9B4}
+/* L'ouverture : le texte posé sur les herbes */
+body.vp .welcome{text-shadow:0 1px 2px rgba(60,24,6,.35), 0 2px 22px rgba(60,24,6,.55)}
+body.vp .welcome .title{font-weight:250;font-size:38px}
+body.vp .welcome .lead,body.vp .welcome .mot,body.vp .welcome .fine{color:rgba(255,255,255,.9);font-weight:300}
+body.vp .welcome .pas{color:rgba(255,255,255,.8)}
+body.vp .welcome .pas i{border-color:rgba(255,255,255,.5)}
+body.vp .welcome .field{color:#fff;font-weight:400}
+body.vp .welcome .orb::after{background:radial-gradient(circle at 40% 32%, #FFEDBA 0%, var(--or) 30%, var(--feu) 72%, #DD520C 100%);box-shadow:0 0 22px 6px rgba(255,140,40,.75), inset -4px -6px 10px rgba(160,50,0,.35)}
+body.vp .welcome .orb::before{background:radial-gradient(circle, rgba(255,160,60,.55) 0%, rgba(255,196,90,.16) 42%, transparent 70%)}
+body.vp .welcome :is(.sw-list,.racc,.card,.group,input,.btn){text-shadow:none}
+:root[data-heure="jour"] body.vp .welcome{color:var(--brun);text-shadow:0 1px 14px rgba(255,244,226,.55)}
+:root[data-heure="jour"] body.vp .welcome :is(.lead,.mot,.fine,.pas,.field){color:rgba(58,36,19,.88)}
+:root[data-heure="jour"] body.vp .welcome .pas i{border-color:rgba(58,36,19,.5)}
+:root[data-heure="jour"] body.vp .welcome :is(.sw-list,.racc,.card,.group,.btn,.chip,.seg){color:#fff}
+:root[data-heure="jour"] body.vp .welcome .btn.primary{color:var(--brun)}
+:root[data-heure="jour"] body.vp .welcome .link{color:#8A4A12}
+/* Les pages racines des autres onglets : le titre respire un peu sous le haut de l'écran */
+body.vp main > .head:first-child{margin-top:18px}
+/* Les listes à lire posées directement sur la photo : exercices, guide, conseils */
+body.vp :is(.exos,.guide,.conseils){text-shadow:0 1px 2px rgba(60,24,6,.35), 0 2px 14px rgba(60,24,6,.45)}
+body.vp :is(.exos,.guide,.conseils) :is(.btn,.duree-tag,.ic,.dot){text-shadow:none}
+:root[data-heure="jour"] body.vp :is(.exos,.guide,.conseils){color:var(--brun);text-shadow:0 1px 12px rgba(255,244,226,.5)}
+:root[data-heure="jour"] body.vp :is(.exos,.guide,.conseils) :is(.fine,.etape .ct p,.conseil .ct p,.exo p){color:rgba(58,36,19,.84)}
+:root[data-heure="jour"] body.vp :is(.exos,.guide,.conseils) :is(.exo-lab,.link){color:#8A4A12}
+:root[data-heure="jour"] body.vp :is(.exos,.guide,.conseils) .duree-tag{color:rgba(58,36,19,.84);border-color:rgba(58,36,19,.4)}
+/* Le jour, les boutons secondaires posés sur le ciel clair s'assombrissent pour rester lisibles */
+:root[data-heure="jour"] body.vp .btn:not(.primary){background:rgba(70,45,28,.42);border-color:rgba(255,255,255,.3)}

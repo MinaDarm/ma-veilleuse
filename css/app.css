@@ -1,0 +1,621 @@
+/* Ma veilleuse : la pièce et la lumière.
+   Tout est neutre (lin, papier, encre). La seule couleur est la lumière : ce qui compte s'allume.
+   Une colonne, texte à gauche, grandes cibles pour une seule main. La brique ne sert qu'aux urgences. */
+:root{
+  --lin:#EEE7DB; --lin-2:#E6DDCE;            /* la page */
+  --papier:#FBF8F2; --creux:#F2ECE1;         /* les surfaces, et ce qui est en creux : champs, pastilles */
+  --trait:#E0D6C6; --trait-fort:#C7BAA4; --bord:#988A74;   /* --bord : le contour des commandes, lisible sans forcer */
+  --encre:#2A2622; --cendre:#675E53; --bronze:#76562A;
+  --lumiere:#D9A441; --lumiere-hi:#FFF4D6; --lumiere-deep:#B5822E; --lueur:rgba(217,164,65,.16); --halo:rgba(217,164,65,.42);
+  --brique:#9B3F2B; --brique-fond:#F4E1D5; --brique-trait:#DFB29C;
+  --plein:#2A2622; --sur-plein:#FBF6EC;      /* le bouton principal */
+  --ciel:rgba(226,186,110,.34);              /* la lueur en haut de l'écran */
+  --ombre:0 1px 2px rgba(60,45,30,.05),0 14px 30px rgba(90,70,45,.09);
+  --barre:rgba(251,248,242,.88);
+  --chevron:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23675E53' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  --font-display:"Lexend", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;   /* Literata retirée le 14 novembre : Lexend seule */
+  --font-body:"Lexend", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color-scheme:light;
+}
+/* La nuit : une pièce sombre, chaude, éclairée par la veilleuse. */
+:root[data-veille="nuit"]{
+  --lin:#151311; --lin-2:#0F0D0C;
+  --papier:#211E1B; --creux:#2B2723;
+  --trait:#39342E; --trait-fort:#544C42; --bord:#766C60;
+  --encre:#F3EEE6; --cendre:#B4AB9E; --bronze:#EBCB8F;
+  --lumiere:#EBC47C; --lumiere-hi:#FFF5DE; --lumiere-deep:#CF9D55; --lueur:rgba(235,196,124,.15); --halo:rgba(235,196,124,.44);
+  --brique:#F0A48E; --brique-fond:rgba(240,150,120,.12); --brique-trait:rgba(240,150,120,.38);
+  --plein:#F1E8D9; --sur-plein:#1E1A16;
+  --ciel:rgba(235,196,124,.08);
+  --ombre:none; --barre:rgba(33,30,27,.88);
+  --chevron:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23B4AB9E' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-veille]){
+  --lin:#151311; --lin-2:#0F0D0C;
+  --papier:#211E1B; --creux:#2B2723;
+  --trait:#39342E; --trait-fort:#544C42; --bord:#766C60;
+  --encre:#F3EEE6; --cendre:#B4AB9E; --bronze:#EBCB8F;
+  --lumiere:#EBC47C; --lumiere-hi:#FFF5DE; --lumiere-deep:#CF9D55; --lueur:rgba(235,196,124,.15); --halo:rgba(235,196,124,.44);
+  --brique:#F0A48E; --brique-fond:rgba(240,150,120,.12); --brique-trait:rgba(240,150,120,.38);
+  --plein:#F1E8D9; --sur-plein:#1E1A16;
+  --ciel:rgba(235,196,124,.08);
+  --ombre:none; --barre:rgba(33,30,27,.88);
+  --chevron:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23B4AB9E' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  color-scheme:dark;
+  }
+}
+/* Aube et crépuscule : une lueur pêche autour du lever et du coucher du soleil */
+:root[data-moment]{--ciel:rgba(240,168,126,.5)}
+:root[data-veille="nuit"][data-moment]{--ciel:rgba(240,170,120,.13)}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;color:var(--encre);font-family:var(--font-body);font-weight:350;font-size:16px;line-height:1.55;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent;
+  background:linear-gradient(180deg, var(--lin) 0%, var(--lin-2) 100%) no-repeat, var(--lin-2)}
+body.noscroll{overflow:hidden}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+a{color:var(--bronze)}
+p{margin:0}
+p,li{text-wrap:pretty}
+b,strong{font-weight:500}
+:focus-visible{outline:2px solid var(--lumiere-deep);outline-offset:2px}
+
+/* Les titres : Literata, une police dessinée pour lire des livres sur écran. Le texte : Lexend, large et régulière. */
+.display,.title,h2,h3,.wordmark,.clock{font-family:var(--font-display);font-optical-sizing:auto;font-variant-numeric:lining-nums;margin:0}
+.display,.title,h2,h3{text-wrap:balance;letter-spacing:-.012em}
+.title{font-size:34px;line-height:1.08;font-weight:520}
+.title.big{font-size:40px;line-height:1.04}
+h2{font-size:24px;line-height:1.15;font-weight:560}
+h3{font-size:20px;line-height:1.2;font-weight:560}
+.lead{color:var(--cendre);max-width:40ch}
+.fine{font-size:14.5px;color:var(--cendre);line-height:1.5}
+.date{font-size:14.5px;color:var(--cendre)}
+
+.app{max-width:440px;margin:0 auto;min-height:100%;overflow-x:clip}
+main{display:flex;flex-direction:column;gap:20px;padding:calc(env(safe-area-inset-top) + 12px) 16px calc(132px + env(safe-area-inset-bottom));outline:none}
+/* On avance vers la droite, on revient vers la gauche : le mouvement dit où l'on est. */
+@keyframes push{from{opacity:0;transform:translateX(24px)}}
+@keyframes pop{from{opacity:0;transform:translateX(-24px)}}
+@keyframes fade{from{opacity:0}}
+
+/* En-têtes */
+.homebar,.subhead{display:flex;align-items:center;justify-content:space-between;min-height:44px}
+.wordmark{display:flex;align-items:center;gap:10px;font-weight:560;font-size:22px;white-space:nowrap}
+.demo-tag{display:inline-block;margin-right:4px;font-family:var(--font-body);font-size:12px;font-weight:500;line-height:1.5;color:var(--cendre);border:1px solid var(--trait-fort);border-radius:999px;padding:1px 9px;letter-spacing:0}
+.icons{display:flex;gap:2px}
+.iconbtn{all:unset;cursor:pointer;width:44px;height:44px;display:grid;place-items:center;border-radius:14px;color:var(--cendre)}
+/* Le petit soleil le jour, la petite lune la nuit : un toucher change de mode. */
+.theme-btn{color:var(--lumiere-deep)}
+.theme-btn span{display:grid;transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+.theme-btn .ic-lune,:root[data-veille="nuit"] .theme-btn .ic-soleil{display:none}
+:root[data-veille="nuit"] .theme-btn .ic-lune{display:grid}
+.theme-btn:active span{transform:rotate(-25deg) scale(.9)}
+.backbtn{display:inline-flex;align-items:center;gap:2px;margin-left:-8px;padding:8px 10px 8px 4px;border-radius:12px;color:var(--encre);font-weight:500;font-size:15.5px;text-decoration:none}
+.backbtn svg{color:var(--cendre)}
+.head{display:flex;flex-direction:column;gap:6px}
+.clockrow{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 14px}
+.clock{font-weight:500;font-size:30px;line-height:1;font-variant-numeric:lining-nums tabular-nums}
+.sun{display:inline-flex;align-items:center;gap:6px;font-size:14px;color:var(--cendre)}
+.sun svg{color:var(--lumiere-deep)}
+
+/* La lumière. Une sphère et son halo, en deux calques : le halo s'anime sans rien repeindre. */
+.orb{position:relative;display:block;flex:none;width:52px;height:52px;border-radius:50%}
+.orb::before{content:"";position:absolute;inset:-46%;border-radius:50%;background:radial-gradient(circle, var(--halo) 0%, var(--lueur) 42%, transparent 70%);pointer-events:none}
+.orb::after{content:"";position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 34% 28%, rgba(255,255,255,.85), rgba(255,255,255,0) 26%), radial-gradient(circle at 40% 34%, var(--lumiere-hi), var(--lumiere) 56%, var(--lumiere-deep));box-shadow:inset 0 -4px 9px rgba(120,78,16,.22)}
+/* Trois journées, trois intensités */
+.o-veilleuse{transform:scale(.72)}
+.o-veilleuse::before{opacity:.5}
+.o-normale{transform:scale(.88)}
+.o-normale::before{opacity:.8}
+.o-elan::before{inset:-66%}
+/* La journée s'allume : le cœur d'abord, puis le halo qui s'ouvre et se pose. */
+.orb.allume::after{animation:allume-coeur 1s cubic-bezier(.2,.9,.25,1.15) both}
+.orb.allume::before{animation:allume-halo 1.6s ease-out both}
+@keyframes allume-coeur{0%{transform:scale(.15);opacity:0}45%{opacity:1}}
+@keyframes allume-halo{0%{transform:scale(.2);opacity:0}32%{transform:scale(2);opacity:1}}
+/* La veilleuse respire : un peu plus de 2 s pour inspirer, un peu plus de 3 s pour souffler. */
+.veille .orb::before,.welcome .orb::before,.souffle-carte .orb::before{animation:souffle-halo 6s ease-in-out infinite}
+.veille .orb::after,.welcome .orb::after,.souffle-carte .orb::after{animation:souffle-coeur 6s ease-in-out infinite}
+@keyframes souffle-halo{0%,100%{transform:scale(.7);opacity:.5}40%{transform:scale(1.2);opacity:1}}
+@keyframes souffle-coeur{0%,100%{transform:scale(.93)}40%{transform:scale(1.05)}}
+/* Les petites lumières : ce qui est choisi, ce qui est fait */
+.flame,.jp.on,.lv,.mini.on,.biglist li::before,.dot,[aria-pressed="true"] > .box,.pas i.on{background:radial-gradient(circle at 38% 32%, var(--lumiere-hi), var(--lumiere) 58%, var(--lumiere-deep))}
+.flame{display:inline-block;flex:none;width:11px;height:11px;border-radius:50%;box-shadow:0 0 0 4px var(--lueur),0 0 14px var(--halo)}
+.dot{flex:none;width:12px;height:12px;border-radius:50%;box-shadow:0 0 0 3px var(--lueur)}
+
+/* Cartes. La carte du jour est la seule surface surélevée. */
+.card{display:flex;flex-direction:column;gap:12px;padding:18px;border-radius:22px;background:var(--papier);border:1px solid var(--trait)}
+.hero{display:flex;flex-direction:column;gap:16px;padding:20px 18px;border-radius:28px;background:radial-gradient(90% 70% at 8% 0%, var(--lueur), transparent 70%), var(--papier);border:1px solid var(--trait);box-shadow:var(--ombre)}
+.hero-top{display:flex;align-items:center;gap:18px}
+.hero-top .display{font-size:30px;line-height:1.06;font-weight:520}
+.hero-links{display:flex;flex-wrap:wrap;gap:6px 18px}
+.hero.lit .display{animation:leve .6s .25s cubic-bezier(.2,.8,.2,1) both}
+.hero.lit .cadre{animation:leve .6s .4s cubic-bezier(.2,.8,.2,1) both}
+.hero.lit .mini.on{animation:etincelle .5s cubic-bezier(.2,1.4,.4,1) both;animation-delay:calc(.55s + var(--i,0) * 70ms)}
+@keyframes leve{from{opacity:0;transform:translateY(8px)}}
+@keyframes etincelle{from{transform:scale(0);opacity:0}}
+.nudge{display:flex;flex-direction:column;gap:12px;padding:16px;border-radius:20px;background:var(--lueur);border:1px solid var(--trait)}
+
+/* Jauge : trois lumières par ligne, de la plus petite à la plus grande */
+.jauge{display:flex;flex-direction:column;gap:10px}
+.jr{display:grid;grid-template-columns:84px 1fr;align-items:center;gap:10px}
+.jl{display:flex;flex-direction:column;line-height:1.25}
+.jl b{font-size:15.5px}
+.jl small{font-size:12.5px;color:var(--cendre)}
+.jd{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.jo{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:76px;padding:8px 2px;border-radius:18px;background:var(--creux);border:1px solid var(--trait);text-align:center;transition:transform .12s,border-color .2s,background-color .2s}
+.jp{--t:16px;width:var(--t);height:var(--t);margin:calc((22px - var(--t)) / 2) 0;border-radius:50%;border:1.5px solid var(--bord);background:var(--papier);transition:transform .35s cubic-bezier(.2,1.5,.4,1),box-shadow .3s,border-color .2s}
+.jo:nth-child(1) .jp{--t:12px}
+.jo:nth-child(3) .jp{--t:20px}
+.jp.on{border-color:transparent;box-shadow:0 0 0 4px var(--lueur),0 0 14px var(--halo);transform:scale(1.08)}
+.jw{font-size:12.5px;line-height:1.15;color:var(--cendre)}
+.jo[aria-pressed="true"]{border:1.5px solid var(--lumiere);background:var(--lueur)}
+.jo[aria-pressed="true"] .jw{color:var(--encre);font-weight:500}
+.jr.manque .jo{animation:manque .9s ease 2}
+@keyframes manque{50%{border-color:var(--lumiere-deep);background:var(--lueur)}}
+.err{color:var(--brique);font-size:14.5px}
+.err:empty{display:none}
+.lvrows{display:flex;flex-direction:column;gap:7px}
+.lvrow{display:grid;grid-template-columns:72px auto 1fr;align-items:center;gap:10px;font-size:14.5px}
+.lvrow span:first-child{color:var(--cendre)}
+.minis{display:flex;gap:5px}
+.mini{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--bord)}
+.mini.on{border-color:transparent;box-shadow:0 0 6px var(--halo)}
+
+/* Un moment de libre */
+.moment{display:flex;flex-direction:column;gap:12px;padding:18px;border-radius:22px;background:var(--papier);border:1px solid var(--trait)}
+.durees{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.duree{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;align-items:center;padding:12px 4px;border-radius:18px;background:var(--creux);border:1px solid var(--trait);text-align:center;transition:transform .12s,border-color .2s,background-color .2s}
+.duree b{font-family:var(--font-display);font-weight:520;font-size:29px;line-height:1.08;font-variant-numeric:lining-nums}
+.duree span{font-size:12.5px;color:var(--cendre)}
+.duree[aria-pressed="true"]{border:1.5px solid var(--lumiere);background:var(--lueur)}
+.idee-bloc{display:flex;flex-direction:column;gap:6px;padding:16px;border-radius:18px;background:var(--creux)}
+.idee-bloc.neuf{animation:leve .34s cubic-bezier(.2,.8,.2,1)}
+.idee{font-family:var(--font-display);font-weight:520;font-size:23px;line-height:1.18;text-wrap:balance}
+
+/* Tuiles */
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:10px;min-height:132px;padding:15px;border-radius:22px;background:var(--papier);border:1px solid var(--trait);color:var(--encre);text-decoration:none;transition:transform .12s}
+.tile:not(:has(.st)){min-height:104px}
+.tile b{font-size:15.5px;line-height:1.25}
+.tile .st{margin-top:auto;font-size:13.5px;line-height:1.38;color:var(--cendre);overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical}
+.tiles > .tile:last-child:nth-child(odd){grid-column:1 / -1;min-height:0}
+.ic{flex:none;width:38px;height:38px;border-radius:13px;display:grid;place-items:center;background:var(--creux);color:var(--bronze)}
+.tile:active,.btn:active,.duree:active,.cell:active,.jo:active,.racc:active,.chip:active{transform:scale(.96)}
+
+/* Listes groupées */
+.group-label{font-size:14px;font-weight:500;color:var(--cendre);margin:6px 4px -10px}
+.group{border-radius:20px;background:var(--papier);border:1px solid var(--trait);overflow:hidden}
+.cell{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:14px;width:100%;min-height:64px;padding:11px 14px;border-top:1px solid var(--trait);color:var(--encre);text-decoration:none}
+.cell:first-child{border-top:0}
+.cell .ct{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.35}
+.cell .ct small{font-size:13.5px;color:var(--cendre)}
+.cell .chev{color:var(--cendre);flex:none}
+.cell .ic{width:34px;height:34px;border-radius:11px}
+.badge{flex:none;min-width:26px;height:26px;padding:0 8px;border-radius:999px;display:grid;place-items:center;background:var(--lueur);color:var(--bronze);font-weight:500;font-size:13px;font-variant-numeric:tabular-nums}
+.avatar{flex:none;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--creux);color:var(--bronze);font-family:var(--font-display);font-weight:560;font-size:19px}
+
+/* Choisir une chose parmi quelques-unes, ou plusieurs dans une liste. Ce qui est choisi s'allume. */
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;padding:4px;border-radius:18px;background:var(--creux);border:1px solid var(--trait)}
+.seg button{all:unset;box-sizing:border-box;cursor:pointer;text-align:center;padding:10px 6px;border-radius:14px;font-weight:500;font-size:14.5px;line-height:1.3;color:var(--cendre);transition:background-color .2s,color .2s}
+.seg button[aria-pressed="true"]{background:var(--papier);color:var(--encre);box-shadow:0 1px 3px rgba(60,45,30,.14),0 0 0 1.5px var(--lumiere)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;min-height:44px;padding:9px 15px;border-radius:999px;border:1px solid var(--bord);background:var(--creux);font-size:14.5px;line-height:1.3;transition:border-color .2s,background-color .2s}
+.chip::before{content:"";flex:none;width:0;height:8px;border-radius:50%;background:radial-gradient(circle at 38% 32%, var(--lumiere-hi), var(--lumiere) 58%, var(--lumiere-deep));transition:width .28s cubic-bezier(.2,1.4,.4,1),margin .28s}
+.chip[aria-pressed="true"]{background:var(--lueur);border-color:var(--lumiere);box-shadow:inset 0 0 0 .5px var(--lumiere);font-weight:500}
+.chip[aria-pressed="true"]::before{width:8px;margin-right:9px;box-shadow:0 0 8px var(--halo)}
+.card-tete{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.edit-row{display:flex;align-items:center;gap:6px}
+.edit-row input,.edit-row select{flex:1;min-width:0}
+.edit-row .heure-in{flex:none;width:126px}
+
+/* Boutons. Un seul bouton plein par écran : c'est lui qu'on touche. */
+.btn{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:50px;padding:12px 18px;border-radius:16px;border:1px solid var(--bord);background:var(--papier);color:var(--encre);font-family:var(--font-body);font-weight:500;font-size:15.5px;line-height:1.3;text-align:center;text-decoration:none;transition:transform .12s,background-color .2s}
+.btn.primary{background:var(--plein);color:var(--sur-plein);border-color:transparent;box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 8px 18px rgba(42,38,34,.16)}
+.btn.big{width:100%;min-height:56px;font-size:16.5px}
+.btn.left{justify-content:flex-start;text-align:left}
+.btn.danger{color:var(--brique)}
+.btn[disabled]{opacity:.45;cursor:default}
+.link{all:unset;cursor:pointer;color:var(--bronze);font-weight:500;font-size:14.5px;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+.center{align-self:center;padding:10px}
+.row{display:flex;flex-wrap:wrap;gap:10px}
+.row .btn{flex:1 1 auto}
+.stack{display:flex;flex-direction:column;gap:10px}
+
+/* Relais : ce dont j'ai besoin */
+.besoin{display:flex;align-items:center;gap:22px;padding:22px 22px 22px 26px;border-radius:28px;border:1px solid var(--trait);background:radial-gradient(110% 130% at 0% 0%, var(--lueur), transparent 62%), var(--papier);box-shadow:var(--ombre)}
+.besoin .orb{width:42px;height:42px}
+.besoin .display{font-size:28px;line-height:1.06;font-weight:520}
+.besoin .petit{font-size:22px;line-height:1.14}
+.besoin small{display:block;margin-top:6px;font-size:14.5px;color:var(--cendre);line-height:1.4}
+.besoin ul{margin:8px 0 0;padding-left:18px;font-size:15.5px}
+
+/* Cocher : une petite lumière qui s'allume */
+.checks{display:flex;flex-direction:column;border-radius:20px;background:var(--papier);border:1px solid var(--trait);overflow:hidden}
+.check{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:14px;min-height:62px;padding:10px 16px;border-top:1px solid var(--trait);transition:background-color .25s}
+.check:first-child{border-top:0}
+.check[aria-pressed="true"]{background:var(--lueur)}
+.check .lab{flex:1}
+.box{flex:none;width:24px;height:24px;border-radius:50%;border:1.5px solid var(--bord);background:var(--papier);transition:box-shadow .3s,border-color .3s}
+[aria-pressed="true"] > .box{border-color:transparent;box-shadow:0 0 0 5px var(--lueur),0 0 16px var(--halo)}
+.quand{font-size:13px;color:var(--cendre);font-variant-numeric:tabular-nums;white-space:nowrap}
+.check-row{display:flex;align-items:center;border-top:1px solid var(--trait);transition:background-color .25s}
+.check-row:first-child{border-top:0}
+.check-row .check{flex:1;min-width:0;border-top:0;background:transparent}
+.check-row .check[aria-pressed="true"]{background:transparent}
+.check-row:has(.check[aria-pressed="true"]){background:var(--lueur)}
+.check-row .mini-btn{margin-right:6px}
+.check .lab small{display:block;font-size:13px;color:var(--cendre)}
+/* Le geste qui vient d'être fait : la lumière prend, la pastille répond. */
+.tap-in[aria-pressed="true"] > .box{animation:prend .6s cubic-bezier(.2,1.4,.4,1)}
+.chip.tap-in[aria-pressed="true"],.duree.tap-in[aria-pressed="true"],.seg button.tap-in[aria-pressed="true"]{animation:repond .32s cubic-bezier(.2,1.4,.4,1)}
+.mini-btn.tap-in[aria-pressed="true"] svg{animation:prend .5s cubic-bezier(.2,1.4,.4,1)}
+@keyframes prend{0%{transform:scale(.4)}60%{transform:scale(1.25)}}
+@keyframes repond{0%{transform:scale(.94)}}
+.chip.tap-in[aria-pressed="true"]::before{animation:point .3s cubic-bezier(.2,1.4,.4,1)}
+@keyframes point{from{width:0;margin-right:0}}
+
+/* Les curseurs : allumé ou éteint */
+.sw-list{display:flex;flex-direction:column;border-radius:20px;background:var(--papier);border:1px solid var(--trait);overflow:hidden}
+.sw-item{border-top:1px solid var(--trait)}
+.sw-item:first-child{border-top:0}
+.sw{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:13px;width:100%;min-height:68px;padding:12px 14px}
+.sw .ic{width:36px;height:36px;border-radius:12px;transition:background-color .3s}
+.sw .ct{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;line-height:1.35}
+.sw .ct small{font-size:13.5px;color:var(--cendre)}
+.sw .track{flex:none;position:relative;width:52px;height:32px;border-radius:999px;background:var(--creux);border:1.5px solid var(--bord);transition:background-color .3s,border-color .3s}
+.sw .knob{position:absolute;top:2.5px;left:2.5px;width:24px;height:24px;border-radius:50%;background:var(--papier);border:1px solid var(--bord);box-shadow:0 1px 3px rgba(0,0,0,.14);transition:transform .32s cubic-bezier(.3,1.3,.5,1),box-shadow .3s,border-color .3s}
+.sw[aria-checked="true"] .track{background:var(--lueur);border-color:var(--lumiere)}
+.sw[aria-checked="true"] .knob{transform:translateX(20px);border-color:transparent;background:radial-gradient(circle at 38% 32%, var(--lumiere-hi), var(--lumiere) 58%, var(--lumiere-deep));box-shadow:0 0 0 4px var(--lueur),0 0 14px var(--halo)}
+.sw[aria-checked="true"] .ic{background:var(--lueur)}
+.sw[aria-checked="true"] .ct > span{font-weight:500}
+.sw.seul{border:1px solid var(--trait);border-radius:18px;background:var(--papier);min-height:62px}
+.card .sw.seul,.projet .sw.seul{background:var(--creux)}
+.sw.tap-in[aria-checked="true"] .knob{animation:glisse-on .32s cubic-bezier(.3,1.3,.5,1)}
+.sw.tap-in[aria-checked="false"] .knob{animation:glisse-off .32s cubic-bezier(.3,1.3,.5,1)}
+@keyframes glisse-on{from{transform:none}}
+@keyframes glisse-off{from{transform:translateX(20px)}}
+/* Ce qu'un curseur demande en plus s'ouvre juste en dessous de lui. */
+.sw-plus{display:grid;grid-template-rows:0fr;transition:grid-template-rows .36s cubic-bezier(.3,.9,.3,1)}
+.sw-plus > div{overflow:hidden;min-height:0;visibility:hidden;transition:visibility 0s .36s}
+.sw-item.on .sw-plus{grid-template-rows:1fr}
+.sw-item.on .sw-plus > div{visibility:visible;transition-delay:0s}
+.dedans{display:flex;flex-direction:column;gap:12px;padding:2px 14px 18px}
+/* Les raccourcis : une situation, plusieurs curseurs d'un coup */
+.racc{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:13px;width:100%;min-height:68px;padding:12px 14px;border-radius:20px;background:var(--papier);border:1px solid var(--trait);transition:border-color .25s,background-color .25s,transform .12s}
+.racc .ct{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;line-height:1.35}
+.racc .ct small{font-size:13.5px;color:var(--cendre)}
+.racc .etat{flex:none;display:inline-flex;align-items:center;gap:7px;font-size:13.5px;font-weight:500;color:var(--bronze)}
+.racc[aria-pressed="true"]{border-color:var(--lumiere);background:var(--lueur)}
+.racc[aria-pressed="true"] .etat::before{content:"";width:8px;height:8px;border-radius:50%;background:radial-gradient(circle at 38% 32%, var(--lumiere-hi), var(--lumiere) 58%, var(--lumiere-deep));box-shadow:0 0 8px var(--halo)}
+
+/* Horaires des prières (option) */
+.prieres{display:flex;flex-direction:column;gap:10px;padding:14px 14px 12px;border-radius:20px;background:var(--papier);border:1px solid var(--trait)}
+.pr-tete{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:2px 12px}
+.pr-tete b{font-family:var(--font-display);font-weight:560;font-size:19px}
+.pr-grille{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.pr{min-width:0;display:flex;flex-direction:column;align-items:center;gap:1px;padding:8px 2px;border-radius:14px;background:var(--creux);border:1px solid var(--trait);font-size:12px;color:var(--cendre)}
+.pr b{font-family:var(--font-display);font-weight:560;font-size:15.5px;line-height:1.2;color:var(--encre);font-variant-numeric:lining-nums tabular-nums;white-space:nowrap}
+.pr.passe{opacity:.5}
+.pr.next{border:1.5px solid var(--lumiere);background:var(--lueur);color:var(--encre)}
+
+/* Listes, notes, projets */
+.tasks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;border-radius:20px;background:var(--papier);border:1px solid var(--trait);overflow:hidden}
+.card .tasks{background:var(--creux)}
+.task{display:flex;align-items:center;gap:2px;min-height:58px;padding:4px 6px;border-top:1px solid var(--trait)}
+.task:first-child{border-top:0}
+.task .tt{flex:1;min-width:0;padding:8px 6px 8px 8px;overflow-wrap:anywhere}
+.task.done .tt{color:var(--cendre);text-decoration:line-through;text-decoration-thickness:1px}
+.nd{color:var(--cendre);font-size:13px;margin-right:6px;font-variant-numeric:tabular-nums}
+.mini-btn{all:unset;box-sizing:border-box;cursor:pointer;flex:none;width:44px;height:44px;display:grid;place-items:center;border-radius:12px;color:var(--cendre)}
+.mini-btn[aria-pressed="true"]{color:var(--lumiere-deep)}
+.add{display:flex;gap:8px}
+.add input{flex:1;min-width:0}
+input[type=text],input[type=tel],textarea,select{font:inherit;font-size:16px;font-weight:350;color:var(--encre);background:var(--creux);border:1px solid var(--bord);border-radius:14px;padding:12px 14px;min-height:50px;width:100%;transition:border-color .2s,box-shadow .2s}
+.card input[type=text],.card input[type=tel],.card textarea,.card select,.projet input,.projet textarea,.sheet input,.sheet textarea,.dedans input,.dedans select{background:var(--lin)}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--lumiere-deep);box-shadow:0 0 0 4px var(--lueur)}
+select{-webkit-appearance:none;appearance:none;background-image:var(--chevron);background-repeat:no-repeat;background-position:right 14px center;padding-right:38px;text-overflow:ellipsis}
+textarea{resize:vertical;line-height:1.5}
+input::placeholder,textarea::placeholder{color:var(--cendre);opacity:.8}
+.field{display:flex;flex-direction:column;gap:6px;font-weight:500;font-size:14.5px}
+.projet{display:flex;flex-direction:column;gap:12px;padding:16px;border-radius:20px;background:var(--papier);border:1px solid var(--trait)}
+.card .projet{background:transparent;border:0;border-top:1px solid var(--trait);border-radius:0;padding:16px 0 4px}
+.projet .titre{font-family:var(--font-display);font-size:22px;font-weight:560;background:transparent;border:0;border-radius:0;padding:0;min-height:0;box-shadow:none}
+.warn{color:var(--encre);border-left:3px solid var(--lumiere);padding-left:10px}
+
+/* Textes de lecture */
+.prose{display:flex;flex-direction:column;gap:14px}
+.prose p,.prose li{max-width:62ch;font-size:16.5px}
+.prose h2{margin-top:10px}
+.plain,.notes{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.plain li,.notes li{position:relative;padding-left:18px}
+.plain li::before,.notes li::before{content:"";position:absolute;left:2px;top:.66em;width:6px;height:6px;border-radius:50%;background:var(--trait-fort)}
+.notes{gap:6px;font-size:14.5px;color:var(--cendre)}
+.points{list-style:none;counter-reset:p;margin:0;padding:0;display:flex;flex-direction:column;gap:18px}
+.points li{counter-increment:p;position:relative;padding-left:40px}
+.points li::before{content:counter(p);position:absolute;left:0;top:-5px;font-family:var(--font-display);font-weight:520;font-size:28px;color:var(--bronze);font-variant-numeric:lining-nums}
+.verset{font-family:var(--font-display);font-style:italic;font-weight:450;font-size:19px;line-height:1.4;border-left:2px solid var(--lumiere);padding-left:14px;display:flex;flex-direction:column;gap:3px}
+.verset span{font-family:var(--font-body);font-style:normal;font-size:13px;color:var(--cendre)}
+.tag{display:inline-block;align-self:flex-start;margin-top:4px;padding:2px 9px;border-radius:999px;border:1px solid var(--trait-fort);color:var(--cendre);font-family:var(--font-body);font-style:normal;font-weight:500;font-size:12px;line-height:1.5}
+
+/* Urgence et numéros : la seule place de la brique */
+.urgence{display:flex;flex-direction:column;gap:12px;padding:16px;border-radius:22px;background:var(--brique-fond);border:1px solid var(--brique-trait)}
+.urgence h2{color:var(--brique)}
+.calls{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.call{display:flex;flex-direction:column;align-items:center;padding:10px 4px;border-radius:16px;background:var(--papier);border:1px solid var(--trait);color:var(--encre);text-decoration:none}
+.urgence .call{border-color:var(--brique-trait)}
+.call b{font-family:var(--font-display);font-weight:560;font-size:27px;line-height:1.1;font-variant-numeric:lining-nums tabular-nums}
+.call span{font-size:12px;color:var(--cendre);text-align:center;line-height:1.25}
+.nums{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;border-radius:20px;background:var(--papier);border:1px solid var(--trait);overflow:hidden}
+.nums li{display:flex;flex-direction:column;gap:2px;padding:14px 16px;border-top:1px solid var(--trait)}
+.nums li:first-child{border-top:0}
+.nums .n{align-self:flex-start;font-family:var(--font-display);font-weight:560;font-size:28px;line-height:1.1;color:var(--encre);text-decoration:none;font-variant-numeric:lining-nums tabular-nums}
+.nums .n.small{font-size:22px;color:var(--bronze);text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+.nums .d{font-size:14.5px;color:var(--cendre)}
+
+/* Évolution */
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:7px}
+.cal-head{font-size:12.5px;color:var(--cendre);text-align:center}
+.cal-cell{aspect-ratio:1;border-radius:50%;border:1.5px solid var(--trait);display:grid;place-items:center}
+.cal-cell.plein,.cal-cell.futur{border-color:transparent}
+.cal-cell.today{outline:2px solid var(--cendre);outline-offset:2px}
+.lv{display:block;border-radius:50%}
+.lv-veilleuse{width:34%;height:34%}
+.lv-normale{width:58%;height:58%}
+.lv-elan{width:84%;height:84%;box-shadow:0 0 12px var(--halo)}
+.dim{display:flex;flex-direction:column;gap:6px}
+.dim-name{font-weight:500}
+.bars{display:grid;grid-template-rows:34px;align-items:end;gap:3px;border-bottom:1px solid var(--trait)}
+.bar{display:block;width:100%;max-width:34px;justify-self:center;border-radius:6px 6px 0 0;background:linear-gradient(180deg, var(--lumiere), var(--lumiere-deep));transform-origin:bottom;animation:pousse .5s cubic-bezier(.2,.9,.3,1) both;animation-delay:calc(var(--i,0) * 22ms)}
+.bar.b0{height:2px;background:var(--trait);border-radius:0;animation:none}
+@keyframes pousse{from{transform:scaleY(0)}}
+.bar-labels{display:grid;gap:3px;font-size:12px;color:var(--cendre);text-align:center;font-variant-numeric:tabular-nums}
+.axis{display:flex;justify-content:space-between;font-size:12.5px;color:var(--cendre);margin-top:-4px}
+.past summary{cursor:pointer;color:var(--bronze);font-weight:500;padding:6px 0}
+.table-wrap{overflow-x:auto;margin-top:10px}
+.jours{width:100%;border-collapse:collapse;font-size:14px}
+.jours th,.jours td{text-align:left;padding:7px 6px;border-bottom:1px solid var(--trait);white-space:nowrap}
+.jours th{color:var(--cendre);font-weight:500}
+.jours .muted{color:var(--cendre)}
+.journal{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.journal li{display:flex;flex-direction:column;gap:2px;padding-left:12px;border-left:2px solid var(--trait)}
+.journal p{white-space:pre-wrap;overflow-wrap:anywhere}
+.notice{display:flex;flex-direction:column;gap:12px;padding:16px;border-radius:20px;background:var(--lueur);border:1px solid var(--trait)}
+
+/* Le guide et les conseils : des lignes à lire, pas des boîtes */
+.guide,.conseils{display:flex;flex-direction:column}
+.etape,.conseil{display:flex;gap:14px;padding:16px 2px;border-top:1px solid var(--trait)}
+.guide > .etape:first-of-type,.conseils > .conseil:first-child{border-top:0}
+.etape .ct,.conseil .ct{display:flex;flex-direction:column;gap:5px}
+.etape .ct b,.conseil .ct b{font-size:15.5px}
+.etape .ct p,.conseil .ct p{font-size:14.5px;color:var(--cendre);line-height:1.5}
+.conseil-liens{display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:2px}
+.exo-lab{display:block;font-size:13px;font-weight:500;color:var(--bronze);margin-bottom:1px}
+
+/* Bienvenue */
+.welcome{display:flex;flex-direction:column;gap:18px;padding-top:18px}
+.welcome .orb{width:68px;height:68px;margin:34px 0 22px 26px}
+.mot{display:flex;flex-direction:column;gap:12px;font-size:16.5px;max-width:40ch}
+.pas{display:flex;align-items:center;gap:7px;font-size:13.5px;font-weight:500;color:var(--cendre)}
+.pas i{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--bord)}
+.pas i.on{border-color:transparent;box-shadow:0 0 0 3px var(--lueur)}
+.pas span{margin-left:5px}
+
+/* La barre du bas, et la veilleuse en son centre */
+.tabs{position:fixed;z-index:6;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom));width:calc(100% - 24px);max-width:416px;display:grid;grid-template-columns:1fr 1fr 68px 1fr 1fr;gap:2px;padding:6px;border-radius:26px;background:var(--papier);background:var(--barre);-webkit-backdrop-filter:blur(18px) saturate(1.2);backdrop-filter:blur(18px) saturate(1.2);border:1px solid var(--trait);box-shadow:0 10px 30px rgba(42,34,28,.16)}
+.tabs[hidden]{display:none}
+.tab-ind{position:absolute;top:6px;left:0;width:0;height:54px;border-radius:20px;background:var(--lueur);opacity:0;pointer-events:none;transition:transform .42s cubic-bezier(.3,1,.3,1),width .42s cubic-bezier(.3,1,.3,1),opacity .2s}
+.tabs a{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:54px;padding:4px 2px;border-radius:20px;color:var(--cendre);text-decoration:none;font-size:12px;white-space:nowrap;transition:color .2s}
+.tabs a[aria-current="page"]{color:var(--encre);font-weight:500}
+.tabs a[aria-current="page"] svg{color:var(--bronze)}
+.veille{all:unset;box-sizing:border-box;cursor:pointer;position:relative;justify-self:center;align-self:center;width:64px;height:64px;margin-top:-30px;border-radius:50%;display:grid;place-items:center;background:var(--papier);border:1px solid var(--trait);box-shadow:0 10px 26px rgba(42,34,28,.2);transition:transform .15s}
+.veille .orb{width:34px;height:34px}
+.veille:active{transform:scale(.9)}
+/* Quand on la touche, la lumière s'ouvre. */
+.veille.eclat .orb::before{animation:eclat .7s ease-out}
+@keyframes eclat{from{transform:scale(1);opacity:1}to{transform:scale(3.6);opacity:0}}
+.veille-sheet .btn.left{gap:14px;min-height:56px}
+/* Le premier jour : un mot pour dire à quoi sert la lumière */
+.coach{all:unset;box-sizing:border-box;cursor:pointer;position:fixed;z-index:7;left:50%;bottom:calc(108px + env(safe-area-inset-bottom));transform:translateX(-50%);width:max-content;max-width:min(300px, calc(100% - 48px));padding:12px 16px;border-radius:18px;background:var(--plein);color:var(--sur-plein);font-size:14.5px;line-height:1.4;text-align:center;box-shadow:0 10px 26px rgba(0,0,0,.22);animation:coach .45s .5s cubic-bezier(.2,.9,.3,1.15) both}
+.coach::after{content:"";position:absolute;left:50%;bottom:-6px;width:14px;height:14px;border-radius:3px;background:var(--plein);transform:translateX(-50%) rotate(45deg)}
+.coach[hidden]{display:none}
+@keyframes coach{from{opacity:0;transform:translate(-50%,10px)}}
+
+/* Feuille du bas */
+.sheet-wrap{position:fixed;inset:0;z-index:15;display:flex;align-items:flex-end;justify-content:center}
+.sheet-wrap[hidden]{display:none}
+.sheet-backdrop{position:absolute;inset:0;background:rgba(24,19,14,.46);animation:voile .24s ease-out both}
+.sheet{position:relative;width:100%;max-width:440px;max-height:90%;overflow:auto;display:flex;flex-direction:column;gap:14px;padding:12px 18px calc(22px + env(safe-area-inset-bottom));background:var(--papier);border-radius:28px 28px 0 0;box-shadow:0 -10px 40px rgba(0,0,0,.18);animation:monte .36s cubic-bezier(.2,.9,.25,1) both}
+.sheet::before{content:"";flex:none;align-self:center;width:40px;height:5px;border-radius:3px;background:var(--trait-fort);margin-bottom:6px}
+.sheet-wrap.ferme .sheet{animation:descend .2s ease-in both}
+.sheet-wrap.ferme .sheet-backdrop{animation:voile-fin .2s ease-in both}
+@keyframes monte{from{transform:translateY(48px);opacity:0}}
+@keyframes descend{to{transform:translateY(48px);opacity:0}}
+@keyframes voile{from{opacity:0}}
+@keyframes voile-fin{to{opacity:0}}
+.sheet h2{outline:none}
+.kicker{font-size:14px;font-weight:500;color:var(--cendre)}
+.doux{display:flex;flex-direction:column;gap:10px;padding:16px;border-radius:18px;background:var(--creux)}
+
+/* Écran à montrer */
+.show{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;gap:20px;padding:calc(env(safe-area-inset-top) + 28px) 24px calc(env(safe-area-inset-bottom) + 22px);background:radial-gradient(120% 60% at 50% 0%, var(--ciel), transparent 70%), var(--lin);overflow-x:hidden;overflow-y:auto;animation:parait .28s ease-out both}
+.show[hidden]{display:none}
+.show.ferme{animation:disparait .18s ease-in both}
+@keyframes parait{from{opacity:0;transform:scale(1.02)}}
+@keyframes disparait{to{opacity:0}}
+.show-inner{flex:1;display:flex;flex-direction:column;justify-content:center;gap:18px;width:100%;max-width:560px;margin:0 auto;outline:none}
+.show-inner .to{font-size:20px;color:var(--cendre)}
+.show-inner .big{font-family:var(--font-display);font-optical-sizing:auto;font-weight:520;font-size:clamp(32px,9vw,48px);line-height:1.1;letter-spacing:-.012em;text-wrap:balance}
+.show-inner .mid{font-size:20px}
+.biglist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px}
+.biglist li{position:relative;padding-left:26px;font-family:var(--font-display);font-weight:520;font-size:clamp(25px,7vw,36px);line-height:1.15}
+.biglist li::before{content:"";position:absolute;left:0;top:.48em;width:11px;height:11px;border-radius:50%;box-shadow:0 0 12px var(--halo)}
+.show-actions{display:flex;flex-direction:column;gap:6px;width:100%;max-width:560px;margin:0 auto}
+
+/* Respirer. L'anneau est la mesure : la lumière le remplit quand on inspire, le quitte quand on souffle. */
+.sf{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+.sf-top{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:2px}
+.sf-nom{font-family:var(--font-display);font-weight:560;font-size:23px}
+.sf-reste{font-size:14.5px;color:var(--cendre);font-variant-numeric:tabular-nums;min-height:1.5em}
+.sf-zone{position:relative;display:grid;place-items:center;width:min(70vw,300px);height:min(70vw,300px);margin:24px 0 14px}
+.sf-zone > *{grid-area:1/1}
+.sf-halo{width:100%;height:100%;border-radius:50%;pointer-events:none;transform:scale(.55);opacity:.3;will-change:transform,opacity}
+.sf-halo.h1{background:radial-gradient(circle, var(--halo) 0%, var(--lueur) 48%, transparent 70%)}
+.sf-halo.h2{background:radial-gradient(circle, transparent 34%, var(--lueur) 54%, transparent 71%)}
+.sf-halo.h3{background:radial-gradient(circle, transparent 46%, var(--lueur) 60%, transparent 72%)}
+.sf-ring{width:100%;height:100%;transform:rotate(-90deg);overflow:visible}
+.sf-ring circle{fill:none}
+/* Garder l'air, ou la pause : rien ne bouge, l'anneau veille doucement. */
+.sf-zone.tient .sf-ring{animation:tenue 2.4s ease-in-out infinite}
+@keyframes tenue{50%{opacity:.5}}
+.sf-ring-bg{stroke:var(--trait-fort);stroke-width:.7}
+.sf-ring-fg{stroke:var(--lumiere);stroke-width:1.8;stroke-linecap:round;stroke-dasharray:100;stroke-dashoffset:100}
+.sf-orbe{position:relative;width:86%;height:86%;border-radius:50%;transform:scale(.5);will-change:transform;background:radial-gradient(circle at 34% 28%, rgba(255,255,255,.8), rgba(255,255,255,0) 24%), radial-gradient(circle at 40% 34%, var(--lumiere-hi), var(--lumiere) 56%, var(--lumiere-deep));box-shadow:inset 0 -16px 34px rgba(120,78,16,.22),inset 0 10px 26px rgba(255,255,255,.3),0 0 60px var(--halo)}
+.sf-eclat{position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 42% 36%, rgba(255,250,236,.95), rgba(255,244,214,.5) 46%, transparent 72%);opacity:.1}
+.sf-mot{position:relative;z-index:1;font-family:var(--font-display);font-optical-sizing:auto;font-weight:520;font-size:42px;line-height:1.05;min-height:1.1em;letter-spacing:-.012em}
+.sf-mot.change{animation:mot .5s cubic-bezier(.2,.8,.2,1)}
+@keyframes mot{from{opacity:0;transform:translateY(8px)}}
+.sf-compte{position:relative;z-index:1;font-family:var(--font-display);font-weight:450;font-size:26px;color:var(--cendre);font-variant-numeric:lining-nums tabular-nums;min-height:1.2em}
+.sf-conseil{position:relative;z-index:1;max-width:32ch;font-size:15.5px;color:var(--cendre)}
+.souffle-carte{display:flex;flex-direction:column;gap:12px;padding:20px 18px;border-radius:28px;border:1px solid var(--trait);background:radial-gradient(110% 120% at 100% 0%, var(--lueur), transparent 66%), var(--papier);box-shadow:var(--ombre)}
+.souffle-carte .hero-top{gap:20px;padding-left:6px}
+.souffle-carte .hero-top .display{font-size:28px}
+.souffle-carte .hero-top .orb{width:44px;height:44px}
+.exos{display:flex;flex-direction:column}
+.exo{display:flex;flex-direction:column;gap:8px;padding:18px 2px;border-top:1px solid var(--trait)}
+.exo:first-of-type{border-top:0;padding-top:4px}
+.exo-tete{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.exo .btn{align-self:flex-start;margin-top:4px}
+.duree-tag{flex:none;font-size:13px;font-weight:500;color:var(--cendre);border:1px solid var(--trait-fort);border-radius:999px;padding:2px 10px}
+
+/* Mes vidéos */
+.videos{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.video{display:flex;align-items:center;gap:12px}
+.video a{flex:1;min-width:0;display:flex;align-items:center;gap:12px;color:var(--encre);text-decoration:none;padding:4px 0}
+.vth{flex:none;position:relative;width:96px;height:54px;border-radius:12px;overflow:hidden;background:var(--creux);display:grid;place-items:center;color:var(--bronze)}
+.vth img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.vth .play{position:relative;z-index:1;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.9);color:#3a322b;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.video .vt{display:flex;flex-direction:column;min-width:0;line-height:1.35}
+.video .vt span{overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.video .vt small{font-size:13px;color:var(--cendre)}
+.add-video{display:flex;flex-direction:column;gap:8px}
+
+.toast{position:fixed;left:50%;bottom:calc(122px + env(safe-area-inset-bottom));z-index:30;transform:translate(-50%,10px);width:max-content;max-width:calc(100% - 40px);padding:11px 18px;border-radius:20px;background:var(--plein);color:var(--sur-plein);box-shadow:0 8px 22px rgba(0,0,0,.2);font-weight:500;font-size:14.5px;line-height:1.4;text-align:center;opacity:0;pointer-events:none;transition:opacity .22s,transform .32s cubic-bezier(.2,.9,.3,1.15)}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+body.avec-coach .toast{bottom:calc(196px + env(safe-area-inset-bottom))}
+
+/* ==========================================================================
+   La lumière vivante (version 3)
+   Une seule présence bouge d'elle-même : la lumière. Elle respire, elle éclaire la pièce, elle répond quand on touche.
+   Trois niveaux, au choix dans les réglages : toutes, douces (la lumière et les fondus, sans déplacement), aucune.
+   ========================================================================== */
+:root{--lampe:var(--ciel);--reflet:rgba(255,246,222,.62)}
+:root[data-veille="nuit"]{--lampe:rgba(235,196,124,.28);--reflet:rgba(255,236,196,.08)}
+:root[data-veille="nuit"][data-moment]{--lampe:rgba(240,170,120,.3)}
+
+/* La lampe de la pièce : la lueur du haut de l'écran respire au même rythme que la veilleuse. */
+.lampe{position:fixed;z-index:-1;left:0;right:0;top:0;height:64vh;pointer-events:none;opacity:.8;transform-origin:50% 0;
+  background:radial-gradient(120% 74% at 50% -20%, var(--lampe), transparent 68%);animation:lampe 6s ease-in-out infinite}
+@keyframes lampe{0%,100%{opacity:.3;transform:scale(1)}40%{opacity:1;transform:scale(1.12,1.34)}}
+
+/* La veilleuse respire franchement. À chaque souffle, deux ondes de lumière s'éloignent. */
+@keyframes souffle-halo{0%,100%{transform:scale(.62);opacity:.4}40%{transform:scale(1.34);opacity:1}}
+@keyframes souffle-coeur{0%,100%{transform:scale(.9)}40%{transform:scale(1.08)}}
+.orb .onde{position:absolute;inset:0;border-radius:50%;border:1.5px solid var(--lumiere);opacity:0;pointer-events:none}
+.veille .orb .onde,.welcome .orb .onde{animation:onde 6s cubic-bezier(.2,.6,.3,1) infinite}
+.veille .orb .onde.o2,.welcome .orb .onde.o2{animation-name:onde2}
+@keyframes onde{0%,38%{opacity:0;transform:scale(1)}44%{opacity:.8}100%{opacity:0;transform:scale(2.5)}}
+@keyframes onde2{0%,54%{opacity:0;transform:scale(1)}60%{opacity:.5}100%{opacity:0;transform:scale(2.05)}}
+
+/* Le tout premier écran : la lumière naît, puis les mots arrivent. C'est le seul moment mis en scène. */
+.welcome .orb{width:92px;height:92px;margin:46px 0 36px 42px}
+.welcome.premier .orb::after{animation:nait-coeur 1.3s cubic-bezier(.2,.9,.25,1.1) both, souffle-coeur 6s 1.3s ease-in-out infinite}
+.welcome.premier .orb::before{animation:nait-halo 1.9s ease-out both, souffle-halo 6s 1.9s ease-in-out infinite}
+.welcome.premier .orb .onde{animation-delay:1.9s}
+@keyframes nait-coeur{0%{transform:scale(.1);opacity:0}45%{opacity:1}70%{transform:scale(1.14)}100%{transform:scale(.9)}}
+@keyframes nait-halo{0%{transform:scale(.2);opacity:0}34%{transform:scale(2.2);opacity:1}100%{transform:scale(.62);opacity:.4}}
+.welcome.premier > *:not(.orb){animation:arrive .6s cubic-bezier(.2,.8,.2,1) both}
+.welcome.premier > :nth-child(2){animation-delay:.4s}
+.welcome.premier > :nth-child(3){animation-delay:.55s}
+.welcome.premier > :nth-child(4){animation-delay:.7s}
+.welcome.premier > :nth-child(n+5){animation-delay:.85s}
+
+/* Un écran arrive : ses blocs se posent l'un après l'autre, comme une pièce qu'on éclaire.
+   On avance : ils viennent de la droite. On revient : de la gauche. On change d'onglet : ils montent. */
+main.push > *:not(.welcome):not(.homebar),main.pop > *:not(.welcome):not(.homebar),main.fade > *:not(.welcome):not(.homebar),
+main.push > .welcome > *,main.pop > .welcome > *{animation:arrive .46s cubic-bezier(.2,.8,.2,1) both}
+main.push > *:not(.welcome):not(.homebar),main.push > .welcome > *{animation-name:arrive-droite}
+main.pop > *:not(.welcome):not(.homebar),main.pop > .welcome > *{animation-name:arrive-gauche}
+main > :nth-child(2),main > .welcome > :nth-child(2){animation-delay:45ms}
+main > :nth-child(3),main > .welcome > :nth-child(3){animation-delay:90ms}
+main > :nth-child(4),main > .welcome > :nth-child(4){animation-delay:135ms}
+main > :nth-child(5),main > .welcome > :nth-child(5){animation-delay:180ms}
+main > :nth-child(n+6),main > .welcome > :nth-child(n+6){animation-delay:225ms}
+@keyframes arrive{from{opacity:0;transform:translateY(22px)}}
+@keyframes arrive-droite{from{opacity:0;transform:translateX(44px)}}
+@keyframes arrive-gauche{from{opacity:0;transform:translateX(-44px)}}
+
+/* Une fois le geste fait, ce qu'on a touché répond : il rebondit, et une onde de lumière s'en détache. */
+.btn.tap-in,.racc.tap-in,.tile.tap-in,.cell.tap-in{animation:presse .36s cubic-bezier(.2,1.5,.4,1)}
+@keyframes presse{0%{transform:scale(.94)}55%{transform:scale(1.03)}}
+@keyframes onde-contour{from{outline:2px solid var(--lumiere);outline-offset:0}to{outline:2px solid transparent;outline-offset:14px}}
+@keyframes repond{0%{transform:scale(.9)}55%{transform:scale(1.05)}}
+.tap-in[aria-pressed="true"] > .box{animation:prend .6s cubic-bezier(.2,1.4,.4,1), onde-contour .7s ease-out}
+.chip.tap-in[aria-pressed="true"],.duree.tap-in[aria-pressed="true"],.seg button.tap-in[aria-pressed="true"],.jo.tap-in[aria-pressed="true"]{animation:repond .42s cubic-bezier(.2,1.5,.4,1), onde-contour .7s ease-out}
+.jo.tap-in[aria-pressed="true"] .jp{animation:prend .55s cubic-bezier(.2,1.4,.4,1)}
+/* Les lumières de la jauge s'allument l'une après l'autre, jusqu'au niveau choisi. */
+.jo:nth-child(2) .jp{transition-delay:70ms}
+.jo:nth-child(3) .jp{transition-delay:140ms}
+.sw.tap-in[aria-checked="true"] .knob{animation:glisse-on .34s cubic-bezier(.3,1.3,.5,1), onde-contour .8s ease-out}
+.sw.tap-in[aria-checked="true"] .ic{animation:prend .55s cubic-bezier(.2,1.4,.4,1)}
+
+/* La journée s'allume : un reflet traverse la carte, une seule fois. */
+.hero{position:relative}
+.hero.lit::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(105deg, transparent 40%, var(--reflet) 50%, transparent 60%) no-repeat;background-size:300% 100%;background-position:100% 0;animation:reflet 1.25s .5s cubic-bezier(.3,.6,.3,1) both}
+@keyframes reflet{from{background-position:100% 0}to{background-position:0% 0}}
+
+/* L'onglet où l'on arrive : son dessin rebondit. */
+.tabs a[aria-current="page"] svg{animation:rebond .5s cubic-bezier(.2,1.5,.4,1)}
+@keyframes rebond{0%{transform:scale(.78)}55%{transform:scale(1.2)}}
+
+/* La feuille monte du bas de l'écran, entière, et y redescend. */
+.sheet{animation:monte .42s cubic-bezier(.2,.9,.2,1) both}
+@keyframes monte{from{transform:translateY(100%)}}
+.sheet-wrap.ferme .sheet{animation:descend .26s cubic-bezier(.5,0,.8,.3) both}
+@keyframes descend{to{transform:translateY(100%)}}
+.sheet-wrap.ferme .sheet-backdrop{animation:voile-fin .26s ease-in both}
+.show{animation:parait .38s cubic-bezier(.2,.8,.2,1) both}
+@keyframes parait{from{opacity:0;transform:scale(1.05)}}
+
+/* Les trois lumières de l'accueil : celle de l'étape en cours s'allume. */
+.pas i.on:not(:has(~ i.on)){animation:allume-point .8s .25s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes allume-point{0%{transform:scale(.2);opacity:.2}55%{transform:scale(1.7)}100%{transform:scale(1)}}
+
+/* Le mot au-dessus de la lumière flotte doucement, pour qu'on le voie. */
+.coach{animation:coach .45s .5s cubic-bezier(.2,.8,.2,1) both, flotte 3.2s 1s ease-in-out infinite}
+@keyframes flotte{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,-5px)}}
+
+/* Changer de jour à nuit : la nouvelle lumière s'étend depuis le soleil ou la lune. */
+::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}
+:root.vt-astre::view-transition-new(root){animation:etend .75s cubic-bezier(.3,.7,.2,1) both}
+@keyframes etend{from{clip-path:circle(0 at var(--vx,80%) var(--vy,5%))}to{clip-path:circle(160vmax at var(--vx,80%) var(--vy,5%))}}
+
+/* --- Douces : la lumière et les fondus, sans rien déplacer.
+       C'est le niveau choisi d'office quand l'appareil demande de réduire les animations. --- */
+:root[data-mvt="doux"] *:not(.essentiel),:root[data-mvt="doux"] *::before,:root[data-mvt="doux"] *::after{animation:none !important;transition-property:color,background-color,border-color,opacity,box-shadow,visibility !important}
+:root[data-mvt="doux"] .lampe,
+:root[data-mvt="doux"] .veille .orb::before,:root[data-mvt="doux"] .welcome .orb::before,:root[data-mvt="doux"] .souffle-carte .orb::before{animation:lueur 6s ease-in-out infinite !important}
+:root[data-mvt="doux"] main.push > *:not(.welcome):not(.homebar),:root[data-mvt="doux"] main.pop > *:not(.welcome):not(.homebar),:root[data-mvt="doux"] main.fade > *:not(.welcome):not(.homebar),
+:root[data-mvt="doux"] main.push > .welcome > *,:root[data-mvt="doux"] main.pop > .welcome > *,
+:root[data-mvt="doux"] .welcome.premier > *{animation:fondu .4s ease-out both !important}
+:root[data-mvt="doux"] .sheet,:root[data-mvt="doux"] .sheet-backdrop,:root[data-mvt="doux"] .show,:root[data-mvt="doux"] .coach,
+:root[data-mvt="doux"] .hero.lit .display,:root[data-mvt="doux"] .hero.lit .cadre,:root[data-mvt="doux"] .hero.lit .mini.on,:root[data-mvt="doux"] .idee-bloc.neuf{animation:fondu .32s ease-out both !important}
+:root[data-mvt="doux"] .sheet-wrap.ferme .sheet,:root[data-mvt="doux"] .sheet-wrap.ferme .sheet-backdrop,:root[data-mvt="doux"] .show.ferme{animation:fondu-fin .2s ease-in both !important}
+@keyframes lueur{0%,100%{opacity:.35}40%{opacity:1}}
+@keyframes fondu{from{opacity:0}}
+@keyframes fondu-fin{to{opacity:0}}
+
+/* --- Aucune : plus rien ne bouge. La respiration guidée garde sa lumière : c'est elle qui guide. --- */
+:root[data-mvt="aucun"] *:not(.essentiel),:root[data-mvt="aucun"] *::before,:root[data-mvt="aucun"] *::after{animation:none !important;transition:none !important}
